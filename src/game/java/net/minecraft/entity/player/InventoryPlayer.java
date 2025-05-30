@@ -48,6 +48,7 @@ public class InventoryPlayer implements IInventory {
 	 * pieces.
 	 */
 	public ItemStack[] armorInventory = new ItemStack[4];
+	private ItemStack offHand = ItemStack.EMPTY;
 	public int currentItem;
 	public EntityPlayer player;
 	private ItemStack itemStack;
@@ -471,26 +472,36 @@ public class InventoryPlayer implements IInventory {
 	 * where the slot indices are used (+100 for armor, +80 for
 	 * crafting).
 	 */
-	public NBTTagList writeToNBT(NBTTagList parNBTTagList) {
-		for (int i = 0; i < this.mainInventory.length; ++i) {
-			if (this.mainInventory[i] != null) {
-				NBTTagCompound nbttagcompound = new NBTTagCompound();
-				nbttagcompound.setByte("Slot", (byte) i);
-				this.mainInventory[i].writeToNBT(nbttagcompound);
-				parNBTTagList.appendTag(nbttagcompound);
-			}
-		}
+public NBTTagList writeToNBT(NBTTagList parNBTTagList) {
+    for (int i = 0; i < this.mainInventory.length; ++i) {
+        if (this.mainInventory[i] != null) {
+            NBTTagCompound nbttagcompound = new NBTTagCompound();
+            nbttagcompound.setByte("Slot", (byte) i);
+            this.mainInventory[i].writeToNBT(nbttagcompound);
+            parNBTTagList.appendTag(nbttagcompound);
+        }
+    }
 
-		for (int j = 0; j < this.armorInventory.length; ++j) {
-			if (this.armorInventory[j] != null) {
-				NBTTagCompound nbttagcompound1 = new NBTTagCompound();
-				nbttagcompound1.setByte("Slot", (byte) (j + 100));
-				this.armorInventory[j].writeToNBT(nbttagcompound1);
-				parNBTTagList.appendTag(nbttagcompound1);
-			}
-		}
+    for (int j = 0; j < this.armorInventory.length; ++j) {
+        if (this.armorInventory[j] != null) {
+            NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+            nbttagcompound1.setByte("Slot", (byte) (j + 100));
+            this.armorInventory[j].writeToNBT(nbttagcompound1);
+            parNBTTagList.appendTag(nbttagcompound1);
+        }
+    }
 
-		return parNBTTagList;
+    // SALVAR O OFFHAND
+    if (this.offHand != null && !this.offHand.isEmpty()) {
+        NBTTagCompound nbttagcompoundOffHand = new NBTTagCompound();
+        nbttagcompoundOffHand.setByte("Slot", (byte) 150);  // slot custom para offhand
+        this.offHand.writeToNBT(nbttagcompoundOffHand);
+        parNBTTagList.appendTag(nbttagcompoundOffHand);
+    }
+
+    return parNBTTagList;
+}
+
 	}
 
 	/**+
@@ -500,23 +511,23 @@ public class InventoryPlayer implements IInventory {
 	public void readFromNBT(NBTTagList parNBTTagList) {
 		this.mainInventory = new ItemStack[36];
 		this.armorInventory = new ItemStack[4];
+		this.offHand = ItemStack.EMPTY;
 
 		for (int i = 0; i < parNBTTagList.tagCount(); ++i) {
-			NBTTagCompound nbttagcompound = parNBTTagList.getCompoundTagAt(i);
-			int j = nbttagcompound.getByte("Slot") & 255;
-			ItemStack itemstack = ItemStack.loadItemStackFromNBT(nbttagcompound);
-			if (itemstack != null) {
-				if (j >= 0 && j < this.mainInventory.length) {
-					this.mainInventory[j] = itemstack;
-				}
-
-				if (j >= 100 && j < this.armorInventory.length + 100) {
-					this.armorInventory[j - 100] = itemstack;
-				}
-			}
-		}
-
-	}
+        NBTTagCompound nbttagcompound = parNBTTagList.getCompoundTagAt(i);
+        int j = nbttagcompound.getByte("Slot") & 255;
+        ItemStack itemstack = ItemStack.loadItemStackFromNBT(nbttagcompound);
+        if (itemstack != null) {
+            if (j >= 0 && j < this.mainInventory.length) {
+                this.mainInventory[j] = itemstack;
+            } else if (j >= 100 && j < this.armorInventory.length + 100) {
+                this.armorInventory[j - 100] = itemstack;
+            } else if (j == 150) { // slot offhand custom
+                this.offHand = itemstack;
+            }
+        }
+    }
+}
 
 	/**+
 	 * Returns the number of slots in the inventory.
