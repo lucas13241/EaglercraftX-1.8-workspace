@@ -81,6 +81,8 @@ public class ContainerPlayer extends Container {
 		for (int i1 = 0; i1 < 9; ++i1) {
 			this.addSlotToContainer(new Slot(playerInventory, i1, 8 + i1 * 18, 142));
 		}
+		
+		this.addSlotToContainer(new Slot(playerInventory, 150, 77, 62));
 
 		this.onCraftMatrixChanged(this.craftMatrix);
 	}
